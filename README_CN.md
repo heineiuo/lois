@@ -23,7 +23,7 @@ import {bindActionCreators, connect} from 'action-creator'
 
 ## 文档
 
-### 1. bindActionCreators(object: actionCreators)(ctx) => function: actions
+### 1. bindActionCreators(object: actionCreators)(ctx) => object: actions
 
 `actionCreators` 是一个包含了你编写的`action`的对象， `ctx`是你要传递的上下文参数
 

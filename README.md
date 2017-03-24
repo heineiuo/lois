@@ -25,7 +25,7 @@ import {bindActionCreators, connect} from 'action-creator'
 
 ## Docs
 
-### 1. bindActionCreators(object: actionCreators)(ctx) => function: actions
+### 1. bindActionCreators(object: actionCreators)(ctx) => object: actions
 
 Param `actionCreators` is a object contain `action creators`, like:
 
