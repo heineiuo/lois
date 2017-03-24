@@ -1,0 +1,16 @@
+node_modules
+.idea
+*.log*
+ignore
+data/*
+build/*
+integrations
+examples
+!build/README.md
+.DS_Store
+Thumb.db
+src/*
+__tests__
+.babelrc
+.editorconfig
+react-dev.json
