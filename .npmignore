@@ -14,3 +14,4 @@ __tests__
 .babelrc
 .editorconfig
 react-dev.json
+yarn.lock

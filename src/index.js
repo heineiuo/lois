@@ -1,1 +1,1 @@
-export * from './main'
+export {connect, bindActionCreators} from './main'

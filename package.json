@@ -1,7 +1,7 @@
 {
   "name": "action-creator",
-  "version": "0.2.0",
-  "main": "/lib/index.js",
+  "version": "0.2.2",
+  "main": "./lib/index.js",
   "repository": "https://github.com/heineiuo/action-creator",
   "author": "heineiuo <heineiuo@gmail.com>",
   "license": "MIT",
