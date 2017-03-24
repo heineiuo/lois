@@ -1,14 +1,10 @@
 const bindActionCreators = (actionCreators) => {
   return (ctx) => {
-    const p = {};
-    Object.keys(actionCreators).forEach(actionCreatorName => {
-      const actionCreator = actionCreators[actionCreatorName];
-      const getActions = () => {};
-      p[actionCreatorName] = (params) => actionCreator(params)(ctx, getActions)
+    return [{}].concat(Object.entries(actionCreators)).reduce((p, cur) => {
+      p[cur[0]] = (params) => cur[1](params)(ctx, () => {});
+      return p
     });
-    return p
   }
-
 };
 
 const connect = (creators) => (main) => (...args) => (ctx, getActions) => {
