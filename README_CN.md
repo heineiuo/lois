@@ -69,7 +69,7 @@ const connectedGetName = connect(
   bindActionCreators({
     getParentName
   })
-)
+))(getName)
 // 这样你就能在getName里调用getParentName了
 
 ```

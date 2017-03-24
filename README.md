@@ -72,7 +72,7 @@ const connectedGetName = connect(
   bindActionCreators({
     getParentName
   })
-)
+)(getName)
 // this will be ok
 
 ```
