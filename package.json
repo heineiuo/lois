@@ -6,7 +6,8 @@
   "author": "heineiuo <heineiuo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "babel ./src -d ./lib"
+    "build": "babel ./src -d ./lib",
+    "test": "jest __tests__"
   },
   "devDependencies": {
     "babel-plugin-transform-class-properties": "^6.23.0",

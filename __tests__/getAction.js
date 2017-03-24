@@ -3,7 +3,7 @@ const bindActionCreators = require('../lib').bindActionCreators;
 
 
 const hi = (name2) => (ctx, getAction) => {
-  return ctx.name+'-'+ctx.name2
+  return ctx.name+'-'+name2
 };
 
 const hello = (name) => (ctx, getAction) => {
