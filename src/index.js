@@ -18,7 +18,7 @@ const createDispatch = (ctx) => (actionCreator) => {
   return actionCreator(createDispatch(ctx), () => ctx)
 }
 
-const seashellActionMiddleware = async ctx => {
+const seashellActionMiddleware = (allActionCreators) => async ctx => {
   const sendError = (error) => {
     ctx.response.body = {error}
     ctx.response.end()
