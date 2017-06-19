@@ -32,7 +32,7 @@ const pathsToActions = async (ctx, paths, currentActionCreators, onSuccess, onEr
   const currentAction = currentActionCreators[paths.shift()];
   if (typeof currentAction === 'undefined') return onError(new Error('NOT_FOUND'));
   if (typeof currentAction === 'object' ) {
-    return process.nextTick(() => walk(currentAction))
+    return process.nextTick(() => pathsToActions(currentAction))
   }
   if (typeof currentAction === 'function') {
     if (paths.length > 0) return onError(new Error('NOT_FOUND'));
