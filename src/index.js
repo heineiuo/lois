@@ -18,40 +18,40 @@ const createDispatch = (ctx) => (actionCreator) => {
   return actionCreator(createDispatch(ctx), () => ctx)
 }
 
-const seashellActionMiddleware = (allActionCreators) => async ctx => {
-  const sendError = (error) => {
-    ctx.response.body = {error}
-    ctx.response.end()
-  };
-  const paths = ctx.request.headers.originUrl.split('/').filter(item => item !== '')
-  const walk = async (currentActionCreators) => {
-    if (paths.length === 0) return sendError('NOT_FOUND');
-    const currentAction = currentActionCreators[paths.shift()];
-    if (typeof currentAction === 'undefined') return sendError('NOT_FOUND');
-    if (typeof currentAction === 'object' ) {
-      return process.nextTick(() => walk(currentAction))
-    }
-    if (typeof currentAction === 'function') {
-      if (paths.length > 0) return sendError('NOT_FOUND');
-      const dispatch = createDispatch(ctx);
-      const actionType = dispatch(currentAction(ctx.request.body));
-      if (actionType instanceof Promise) {
-        try {
-          ctx.response.body = await actionType;
-          ctx.response.end()
-        } catch(e){
-          sendError(e);
-        }
-      }
-      return null;
-    }
-    return sendError('ERROR_TYPE_OF_ACTION')
+
+/**
+ * paths to actions
+ * @param {*} ctx 
+ * @param {*} paths 
+ * @param {*} currentActionCreators 
+ * @param {*} onSuccess 
+ * @param {*} onError 
+ */
+const pathsToActions = async (ctx, paths, currentActionCreators, onSuccess, onError) => {
+  if (paths.length === 0) return onError(new Error('NOT_FOUND'));
+  const currentAction = currentActionCreators[paths.shift()];
+  if (typeof currentAction === 'undefined') return onError(new Error('NOT_FOUND'));
+  if (typeof currentAction === 'object' ) {
+    return process.nextTick(() => walk(currentAction))
   }
-  process.nextTick(() => walk(allActionCreators))
+  if (typeof currentAction === 'function') {
+    if (paths.length > 0) return onError(new Error('NOT_FOUND'));
+    const dispatch = createDispatch(ctx);
+    const actionType = dispatch(currentAction(ctx.request.body));
+    if (actionType instanceof Promise) {
+      try {
+        onSuccess(await actionType)
+      } catch(e){
+        onError(e);
+      }
+    }
+    return null;
+  }
+  return onError(new Error('ERROR_TYPE_OF_ACTION'))
 }
 
 export {
   createDispatch,
   bindActionCreators,
-  seashellActionMiddleware
+  pathsToActions
 }
