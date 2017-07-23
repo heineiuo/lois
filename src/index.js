@@ -30,7 +30,19 @@ const createDispatch = (ctx) => (actionCreator) => {
 const pathsToActions = (ctx, paths, currentActionCreators, onSuccess, onError) => {
   const handleObject = (currentAction, callback=null) => {
     if (currentAction instanceof Array) return handleList(currentAction.slice())
-    if (paths.length === 0) return onError(new Error('NOT_FOUND'));
+    if (paths.length === 0) {
+      if (currentAction['/']){
+        return pathsToActions(
+          ctx,
+          paths,
+          currentAction['/'],
+          onSuccess,
+          onError
+        )
+      }
+      // TODO support path-to-regexp
+      return onError(new Error('NOT_FOUND'));
+    }
     const nextAction = currentAction[paths.shift()]
     return pathsToActions(
       ctx,
