@@ -7,7 +7,8 @@ import {
 
 const currentActionCreators = {
   'about': {
-    '/': query => (dispatch, getCtx) => new Promise(resolve => resolve({message: 'about'}))
+    '/': query => (dispatch, getCtx) => new Promise(resolve => resolve({message: 'about'})),
+    "plain": query => (dispatch, getCtx) => ({message: 'plain'})
   }
 }
 
@@ -16,9 +17,18 @@ const ctx = {
   response: {}
 }
 
+// pathsToActions(
+//   ctx, 
+//   ['about'], 
+//   currentActionCreators, 
+//   console.log, 
+//   console.error
+// )
+
+
 pathsToActions(
   ctx, 
-  ['about'], 
+  ['about', 'plain'], 
   currentActionCreators, 
   console.log, 
   console.error

@@ -68,7 +68,12 @@ const pathsToActions = (ctx, paths, currentActionCreators, onSuccess, onError) =
   const handleFunction = async (currentAction, callback=null) => {
     if (!callback && paths.length > 0) return onError(new Error('NOT_FOUND'));
     const dispatch = createDispatch(ctx);
-    const actionType = dispatch(currentAction(ctx.request.body));
+    let actionType = null 
+    try {
+      actionType = dispatch(currentAction(ctx.request.body));
+    } catch(e) {
+      return onError(e)
+    }
     if (actionType instanceof Promise) {
       try {
         const result = await actionType
@@ -77,6 +82,8 @@ const pathsToActions = (ctx, paths, currentActionCreators, onSuccess, onError) =
       } catch(e){
         onError(e);
       }
+    } else if (!!actionType) {
+      onSuccess(actionType)
     }
     return null;
   }
