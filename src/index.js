@@ -85,7 +85,13 @@ const pathsToActions = (store, paths, params, currentActionCreators, onSuccess, 
       // TODO support path-to-regexp
       return onError(new Error('NOT_FOUND'))
     }
-    const nextAction = currentAction[paths.shift()]
+    let nextAction = currentAction[paths.shift()]
+    if (typeof nextAction === 'undefined') {
+      if (!currentAction.hasOwnProperty('*')) {
+        return onError(new Error('NOT_FOUND'))
+      }
+      nextAction = currentAction['*']
+    }
     return pathsToActions(
       store,
       paths,
@@ -110,29 +116,22 @@ const pathsToActions = (store, paths, params, currentActionCreators, onSuccess, 
 
   const handleFunction = async (currentAction, callback = null) => {
     if (!callback && paths.length > 0) return onError(new Error('NOT_FOUND'))
-    let actionType = null
     try {
-      actionType = store.dispatch(currentAction(params))
+      const actionType = store.dispatch(currentAction(params))
+      if (typeof actionType === 'undefined') return null
+      if (actionType instanceof Promise) {
+        const result = await actionType
+        if (!callback) return onSuccess(result)
+        return callback(result)
+      }
+      return onSuccess(actionType)
     } catch (e) {
       return onError(e)
     }
-    if (actionType instanceof Promise) {
-      try {
-        const result = await actionType
-        if (!callback) return onSuccess(result)
-        callback(result)
-      } catch (e) {
-        onError(e)
-      }
-    } else if (!!actionType) {
-      onSuccess(actionType)
-    }
-    return null
   }
 
   if (typeof currentActionCreators === 'object') return handleObject(currentActionCreators)
   if (typeof currentActionCreators === 'function') return handleFunction(currentActionCreators)
-  if (typeof currentActionCreators === 'undefined') return onError(new Error('NOT_FOUND'))
 
   return onError(new Error('ERROR_TYPE_OF_ACTION'))
 }
