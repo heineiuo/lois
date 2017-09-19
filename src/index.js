@@ -124,6 +124,7 @@ const pathsToActions = (store, paths, params, currentActionCreators, onSuccess, 
         if (!callback) return onSuccess(result)
         return callback(result)
       }
+      if (typeof actionType === 'object' && callback) return callback(actionType)
       return onSuccess(actionType)
     } catch (e) {
       return onError(e)
