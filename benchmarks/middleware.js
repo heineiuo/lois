@@ -1,29 +1,56 @@
 const http = require('http')
+const compression = require('compression')({ filter: () => true })
+const fs = require('fs')
 const { pathsToActions, createStore } = require('../lib')
 
-const api = []
+const noop = () => { }
+
+const compressionAction = () => (dispatch, getState) => {
+  const { request, response } = getState()
+  compression(request, response, noop)
+}
+
+const readFileAction = () => (dispatch, getState) => {
+  const { response: res } = getState()
+  fs.readFile('./index.js', 'utf8', (err, data) => {
+    res.write(data)
+    res.end()
+  })
+}
+  
+const fooBarAction = () => (dispatch, getState) => ({ foo: 'bar' })
+
+const api = [
+  // compressionAction
+]
 
 const n = parseInt(process.env.MW || '1', 10)
-console.log('  %s routes', n)
+const useAsync = process.env.USE_ASYNC === 'true'
+console.log(`  ${n}${useAsync ? ' async' : ''} routes`)
 
 Array.from({ length: n }, (v, k) => {
-  // api.push(() => (dispatch, getState) => new Promise(resolve => resolve({k})))
-  api.push(() => (dispatch, getState) => ({ k }))
+  if (useAsync) {
+    api.push(() => (dispatch, getState) => new Promise(resolve => resolve({ k })))
+  } else {
+    api.push(() => (dispatch, getState) => ({ k }))
+  }
 })
 
 api.push(
-  () => (dispatch, getState) => ({ foo: 'bar' })
+  fooBarAction
 )
 
 const reducers = {
   request: (state = {}) => state,
   response: (state = {}) => state,
+  params: (state = {}) => state
 }
 
 const server = http.createServer(function (req, res) {
   const store = createStore(reducers, { request: req, response: res })
   const onSuccess = (data) => {
-    res.end(JSON.stringify(data))
+    const str = JSON.stringify(data)
+    res.end(str)
   }
   const onError = (err) => {
     res.end(err.stack)

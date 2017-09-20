@@ -63,81 +63,96 @@ const createStore = (reducers, defaultState = {}, middeware = noop) => {
  * paths to actions
  * @param {*} store 
  * @param {*} paths 
- * @param {*} params // default: store.getState().request.body
  * @param {*} currentActionCreators 
  * @param {*} onSuccess 
  * @param {*} onError 
  */
-const pathsToActions = (store, paths, params, currentActionCreators, onSuccess, onError) => {
+const pathsToActions = (store, paths, currentActionCreators, onSuccess, onError) => {
   const handleObject = (currentAction, callback = null) => {
-    if (currentAction instanceof Array) return handleList(currentAction)
+    let nextAction
     if (paths.length === 0) {
-      if (currentAction['/']) {
-        return pathsToActions(
-          store,
-          paths,
-          params,
-          currentAction['/'],
-          onSuccess,
-          onError
-        )
+      if (!currentAction.hasOwnProperty('/')) {
+        return onError(new Error('NOT_FOUND'))
       }
-      // TODO support path-to-regexp
-      return onError(new Error('NOT_FOUND'))
+      nextAction = currentAction['/']
+    } else {
+      nextAction = currentAction[paths.shift()]
     }
-    let nextAction = currentAction[paths.shift()]
     if (typeof nextAction === 'undefined') {
       if (!currentAction.hasOwnProperty('*')) {
         return onError(new Error('NOT_FOUND'))
       }
       nextAction = currentAction['*']
     }
-    return pathsToActions(
-      store,
-      paths,
-      params,
-      nextAction,
-      onSuccess,
-      onError
-    )
+    if (typeof nextAction === 'function') {
+      return handleFunction(nextAction)
+    }
+    if (nextAction instanceof Array) {
+      return handleList(nextAction)
+    }
+    if (typeof nextAction === 'object') {
+      return handleObject(nextAction)
+    }
+    return onError(new TypeError(`ERROR_TYPE_OF_ACTION: typeof currentActionCreators is ${typeof currentActionCreators}`))
   }
 
   const handleList = (list) => {
-    if (list.length === 0) return onError(new Error('NOT_FOUND'))
-    const walkToSolveList = (index, prevResult) => {
-      if (list.length === index) return onSuccess(prevResult)
+    if (list.length === 0) {
+      return onError(new Error('NOT_FOUND'))
+    }
+    const walkToSolveList = (index) => {
       const current = list[index]
-      if (typeof current === 'function') return handleFunction(current, result => walkToSolveList(index + 1, result))
-      if (typeof current === 'object') return handleObject(current)
+      if (typeof current === 'function') {
+        return handleFunction(
+          current, 
+          (index === list.length - 1) ? 
+            '' : 
+            result => walkToSolveList(index + 1, result)
+        )
+      }
+      if (current instanceof Array) {
+        return handleList(current)
+      }
+      if (typeof current === 'object') {
+        return handleObject(current)
+      }
       return onError(new Error('ERROR_TYPE_OF_ACTION'))
     }
     return walkToSolveList(0)
   }
 
   const handleFunction = async (currentAction, callback = null) => {
-    if (!callback && paths.length > 0) return onError(new Error('NOT_FOUND'))
+    if (!callback && paths.length > 0) {
+      return onError(new Error('NOT_FOUND'))
+    }
     try {
-      const actionType = store.dispatch(currentAction(params))
-      if (typeof actionType === 'undefined') return null
-      if (actionType instanceof Promise) {
-        const result = await actionType
-        if (!callback) return onSuccess(result)
-        return callback(result)
+      const actionType = store.dispatch(currentAction(store.getState().params))
+      const actionResult = actionType instanceof Promise ?
+        await actionType :
+        actionType
+      if (callback) return callback()
+      if (typeof actionResult === 'undefined') {
+        return false
       }
-      if (typeof actionType === 'object' && callback) return callback(actionType)
-      return onSuccess(actionType)
+      return onSuccess(actionResult)
     } catch (e) {
       return onError(e)
     }
   }
 
-  if (typeof currentActionCreators === 'object') return handleObject(currentActionCreators)
-  if (typeof currentActionCreators === 'function') return handleFunction(currentActionCreators)
-
-  return onError(new Error('ERROR_TYPE_OF_ACTION'))
+  if (currentActionCreators instanceof Array) {
+    return handleList(currentActionCreators)
+  }
+  if (typeof currentActionCreators === 'object') {
+    return handleObject(currentActionCreators)
+  }
+  if (typeof currentActionCreators === 'function') {
+    return handleFunction(currentActionCreators)
+  }
+  return onError(new TypeError(`ERROR_TYPE_OF_ACTION: typeof currentActionCreators is ${typeof currentActionCreators}`))
 }
 
-export {
+module.exports = module.exports.default = {
   createStore,
   bindActionCreator,
   bindActionCreators,
