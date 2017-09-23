@@ -1,78 +1,94 @@
-# action-creator
-编写需要上下文参数的函数，但是可以不传入上下文参数
+# lois (音译罗伊丝，法语中 「法律 」 的意思)
+受[redux](https://github.com/reactjs/redux)启发，采用 「 可预测数据流 」 架构编写web服务的框架。
 
 ---
 
+## 概述
 
-## 开始
+
+
+## 快速上手
 
 ### 安装
 
-```
-npm install action-creator
-# 或者
-yarn add action-creator
+```bash
+$ npm install lois
 ```
 
-### 使用
+### 一个例子
 
 ```javascript
-import {bindActionCreators, connect} from 'action-creator'
+import { createStore, routerReducer, paramsReducer, requestReducer, responseReducer, paramsParse, routerReducer, routerGo } from 'lois'
+import http from 'http'
+
+const helloworld = () => (dispatch, getState) => {
+  return {
+    hello: 'world'
+  }
+}
+
+http.createServer((req, res) => {
+  try {
+    const store = createStore({
+      request: requestReducer,
+      response: responseReducer,
+      params: paramsReducer,
+      router: routerReducer
+    }, {
+      request: req,
+      response: res,
+      params: {},
+      router: {}
+    })
+
+    store.dispatch(paramsParse())
+    store.dispatch(routerGo({
+      *: helloworld
+    }))
+
+  } catch(e){
+    res.end(e.stack)
+  }
+}).listen('8080', 'Lois running on port 8080')
+
 ```
 
 
 ## 文档
 
-### 1. bindActionCreators(object: actionCreators)(ctx) => object: actions
+### 目录
+* createStore
+* bindActionCreators
+* requestReducer
+* responseReducer
+* routerReducer
+* routerGo
+* paramsParse
+* paramsReducer
 
-`actionCreators` 是一个包含了你编写的`action`的对象， `ctx`是你要传递的上下文参数
+### createStore
+
+### bindActionCreators(actionCreators: object) => binded: object
+
+`actionCreators` 是一个包含了你编写的`action`的对象
 
 ```javascript
-bindActionCreators({
+const binded = bindActionCreators({
   getIp: () => {},
   getUserName: () => {},
 })
 
-```
-`bindActionCreators`会返回一个函数，然后你把你的上下文传递给它，得到真正可以调用的`action`函数：
-
-```javascript
-const ctx = {
-  req: {},
-  res: {}
-}
-
-bindActionCreators({
-  getIp: () => {},
-  getUserName: () => {},
-})(ctx)
-```
-
-现在，你可以直接调用 `{getIp, getUserName}`等函数了
+现在，你可以直接调用 `binded.getIp()`, `binded.getUserName()`等函数了
 
 
-### 2. connect(function: bindActionCreators(actionCreators))(beConnected) => function: wrappedActionCreator
+### requestReducer
+### responseReducer
+### routerReducer
+### routerGo
+### paramsParse
+### paramsReducer
 
-一个`action`的编写方式是： `(..args) => (ctx, getAction) => {...}`, 注意这里的`getAction`, 它会返回你要的其他`action`，
-但是你首先得`connect`这个`action`，把你要用到的`action` 传进来：
 
-```javascript
-
-const getName = (...args) => (ctx, getAction) => {
-  const {getParentName} = getAction()
-  return getParentName(...args) + args[1]
-}
-// ... 此时如果你调用`bindActionCreators(...)(ctx)`, 再执行`getName`, 会触发
-// 'getParentName is not a function'的错误， 你必须像下面这么做
-
-const connectedGetName = connect(
-  bindActionCreators({
-    getParentName
-  })
-))(getName)
-// 这样你就能在getName里调用getParentName了
-
-```
 
 ## License
 
