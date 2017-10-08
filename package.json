@@ -1,12 +1,11 @@
 {
   "name": "lois",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "main": "./lib/index.js",
   "repository": "https://github.com/heineiuo/lois",
   "author": "heineiuo <heineiuo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "babel ./src -d ./lib",
     "test": "jest tests"
   },
   "devDependencies": {
@@ -16,5 +15,9 @@
     "babel-preset-stage-0": "^6.22.0",
     "compression": "^1.7.0",
     "jest": "^19.0.2"
-  }
+  },
+  "files": [
+    "lib",
+    "index.d.ts"
+  ]
 }

@@ -3,4 +3,7 @@ export function createStore(reducers: { function }, defaultState: { any }, middl
   getState
 }
 
-export function pathsToActiosn(store, paths, params, currentActionCreators, onSuccess, onError): any
+export function routerGo(actions: { any }, callback)
+export function routerReducer(state: { any }, action: { any }): { any }
+export function requestReducer(state: { any }, action: { any }): { any }
+export function responseReducer(state: { any }, action: { any }): { any }

@@ -5,7 +5,6 @@ ignore
 data/*
 dist/*
 build/*
-lib/*
 !build/README.md
 .DS_Store
 Thumb.db
