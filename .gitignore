@@ -9,3 +9,4 @@ build/*
 .DS_Store
 Thumb.db
 examples/data/db/service/*
+lib
