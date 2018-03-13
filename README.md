@@ -18,46 +18,73 @@ $ npm install lois
 ### Example
 
 ```javascript
-import { createStore, routerReducer, paramsReducer, requestReducer, responseReducer, paramsParse, routerReducer, routerGo } from 'lois'
-import http from 'http'
 
-const helloworld = () => (dispatch, getState) => {
-  return {
-    hello: 'world'
+const morgan = require('morgan')
+const express = require('express')
+const lois = require('lois')
+
+const lex = lois.express
+const symbols = lois.symbols
+
+class User {
+  reducer(state, action) {
+    return state
+  }
+
+  _next(query) {
+    return async (dispatch, getState) => {
+      return symbols.NextSymbol
+    }
+  }
+
+  _get(query) {
+    return async (dispatch, getState) => {
+      return {
+        query: query
+      }
+    }
+  }
+
+  _ignore(query) {
+    return async (dispatch, getState) => {
+      const { response: res } = getState()
+      res.write(JSON.stringify({ ignore: query }))
+      res.end()
+      return symbols.IgnoreSymbol
+    }
   }
 }
 
-http.createServer((req, res) => {
-  try {
-    const store = createStore({
-      request: requestReducer,
-      response: responseReducer,
-      params: paramsReducer,
-      router: routerReducer
-    }, {
-      request: req,
-      response: res,
-      params: {},
-      router: {}
-    })
 
-    store.dispatch(paramsParse())
-    store.dispatch(routerGo({
-      *: helloworld
-    }))
+const user = new User()
 
-  } catch(e){
-    res.end(e.stack)
-  }
-}).listen('8080', 'Lois running on port 8080')
+const app = express()
+
+app.use(morgan('dev'))
+app.use(lex.createStore())
+app.use('/user', lex.register('user', {}, user))
+app.use('/user/:userId', ...lex.transform(user._next))
+app.get('/user/:userId', ...lex.transform(user._get))
+app.get('/user/:userId/ignore', ...lex.transform(user._ignore, user._get))
+
+app.listen(10723, () => console.log('running on port 10723'))
 
 ```
 
 
+## Documents
+
+### lois.express.createStore
+
+### lois.express.transform
+
+### lois.express.register
+
+### lois.symbols.NextSymbol
+
+### lois.symbols.IgnoreSymbol
 
 
-## Docs
-..TODO
 
 ## License
 

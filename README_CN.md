@@ -18,76 +18,71 @@ $ npm install lois
 ### 一个例子
 
 ```javascript
-import { createStore, routerReducer, paramsReducer, requestReducer, responseReducer, paramsParse, routerReducer, routerGo } from 'lois'
-import http from 'http'
 
-const helloworld = () => (dispatch, getState) => {
-  return {
-    hello: 'world'
+const morgan = require('morgan')
+const express = require('express')
+const lois = require('lois')
+
+const lex = lois.express
+const symbols = lois.symbols
+
+class User {
+  reducer(state, action) {
+    return state
+  }
+
+  _next(query) {
+    return async (dispatch, getState) => {
+      return symbols.NextSymbol
+    }
+  }
+
+  _get(query) {
+    return async (dispatch, getState) => {
+      return {
+        query: query
+      }
+    }
+  }
+
+  _ignore(query) {
+    return async (dispatch, getState) => {
+      const { response: res } = getState()
+      res.write(JSON.stringify({ ignore: query }))
+      res.end()
+      return symbols.IgnoreSymbol
+    }
   }
 }
 
-http.createServer((req, res) => {
-  try {
-    const store = createStore({
-      request: requestReducer,
-      response: responseReducer,
-      params: paramsReducer,
-      router: routerReducer
-    }, {
-      request: req,
-      response: res,
-      params: {},
-      router: {}
-    })
 
-    store.dispatch(paramsParse())
-    store.dispatch(routerGo({
-      *: helloworld
-    }))
+const user = new User()
 
-  } catch(e){
-    res.end(e.stack)
-  }
-}).listen('8080', 'Lois running on port 8080')
+const app = express()
+
+app.use(morgan('dev'))
+app.use(lex.createStore())
+app.use('/user', lex.register('user', {}, user))
+app.use('/user/:userId', ...lex.transform(user._next))
+app.get('/user/:userId', ...lex.transform(user._get))
+app.get('/user/:userId/ignore', ...lex.transform(user._ignore, user._get))
+
+app.listen(10723, () => console.log('running on port 10723'))
 
 ```
 
 
 ## 文档
 
-### 目录
-* createStore
-* bindActionCreators
-* requestReducer
-* responseReducer
-* routerReducer
-* routerGo
-* paramsParse
-* paramsReducer
+### lois.express.createStore
 
-### createStore
+### lois.express.transform
 
-### bindActionCreators(actionCreators: object) => binded: object
+### lois.express.register
 
-`actionCreators` 是一个包含了你编写的`action`的对象
+### lois.symbols.NextSymbol
 
-```javascript
-const binded = bindActionCreators({
-  getIp: () => {},
-  getUserName: () => {},
-})
-
-现在，你可以直接调用 `binded.getIp()`, `binded.getUserName()`等函数了
-
-
-### requestReducer
-### responseReducer
-### routerReducer
-### routerGo
-### paramsParse
-### paramsReducer
-
+### lois.symbols.IgnoreSymbol
 
 
 ## License
