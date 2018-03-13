@@ -62,7 +62,7 @@ const app = express()
 
 app.use(morgan('dev'))
 app.use(lex.createStore())
-app.use('/user', lex.register('user', {}, user))
+app.use('/user', lex.register('user', user))
 app.use('/user/:userId', ...lex.transform(user._next))
 app.get('/user/:userId', ...lex.transform(user._get))
 app.get('/user/:userId/ignore', ...lex.transform(user._ignore, user._get))
