@@ -1,10 +1,13 @@
 {
-  "plugins": [
-    "transform-class-properties",
-    ["transform-runtime", {
-      "polyfill": false,
-      "regenerator": true
+  "presets": [
+    ["@babel/preset-env", {
+      "loose": true,
+      "useBuiltIns": false,
+      "targets": {
+        "node": "current"
+      }
     }]
   ],
-  "presets": ["es2015", "stage-0"]
+  "plugins": [
+  ]
 }
